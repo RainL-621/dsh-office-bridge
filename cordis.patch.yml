@@ -1,0 +1,7 @@
+- insert:
+    - id: office-bridge
+      name: 'dsh-office-bridge'
+      inject:
+        - sessions
+        - webServer
+        - connection

@@ -1,0 +1,39 @@
+MIT License
+
+Copyright (c) 2026 Liu Yuhui
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---------------------------------------------------------------------------
+
+AGPL boundary notice (边界声明):
+
+This package is an original, zero-dependency integration layer and contains
+NO source code from ONLYOFFICE Document Server. ONLYOFFICE Document Server —
+the separate editing engine this package optionally connects to over HTTP —
+is an independent product licensed by its authors under AGPL v3 (or
+commercial terms). Installing and using ONLYOFFICE Document Server is the
+user's own responsibility, including accepting its license. Connecting to it
+from this MIT-licensed package over a public HTTP API does not, in the
+authors' judgment, make this package a derivative work of Document Server.
+
+本包为原创零依赖集成层，不包含 ONLYOFFICE Document Server 的任何源代码。
+ONLYOFFICE Document Server 是独立产品，由其权利人按 AGPL v3（或商业条款）授权；
+是否安装及接受其许可由用户自行决定与承担。本 MIT 包仅通过其公开 HTTP 接口连接，
+作者判断不构成 Document Server 的衍生作品。
