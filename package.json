@@ -1,6 +1,6 @@
 {
   "name": "dsh-office-bridge",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "license": "MIT",
   "type": "module",
   "description": "Open and edit .xlsx/.docx/.pptx/.csv/.tsv in the DSH sidebar via a locally installed ONLYOFFICE Document Server (original-format edit, callback write-back)",

@@ -43,6 +43,9 @@ window.__ModuleLoader__.load({
 .${P}-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;color:inherit}
 .${P}-msg h4{margin:0;font-size:14px}
 .${P}-msg code{font-size:12px;opacity:.75;word-break:break-all;max-width:80%}
+.${P}-msg a.${P}-btn{text-decoration:none;display:inline-block}
+.${P}-probe{font-size:12px;opacity:.65;max-width:80%}
+.${P}-probe.on{opacity:1;color:#2e7d32}
 `;
 
     // --- resource address parsing (self-contained, mirrors host conventions) ---
@@ -95,6 +98,8 @@ window.__ModuleLoader__.load({
       const [error, setError] = React.useState(null);
       const [loading, setLoading] = React.useState(true);
       const [attempt, setAttempt] = React.useState(0);
+      const [dsOk, setDsOk] = React.useState(null); // null=检测中 / false=未检出 DS / true=DS 就绪
+      const autoRetry = React.useRef(0); // 同一失败周期内自动重开次数上限，防死循环
 
       const open = React.useCallback(async () => {
         setLoading(true);
@@ -104,6 +109,7 @@ window.__ModuleLoader__.load({
           const res = await fetch(`${location.origin}/office-bridge/api/editor?${query}`, { credentials: 'same-origin' });
           const data = await res.json().catch(() => ({ ok: false, message: `HTTP ${res.status}` }));
           if (!res.ok || !data.ok) throw new Error(data.message || data.code || `HTTP ${res.status}`);
+          autoRetry.current = 0;
           setUrl(data.url);
         } catch (err) {
           setError(String(err?.message ?? err));
@@ -113,6 +119,31 @@ window.__ModuleLoader__.load({
       }, [query]);
 
       React.useEffect(() => { open(); }, [open, attempt]);
+
+      // 失败态下的 DS 探测：每 5s 查 /api/health；DS 从未就绪变为就绪时自动重开编辑器。
+      const dsMissing = !url && !loading && !!error;
+      React.useEffect(() => {
+        if (!dsMissing) return undefined;
+        let alive = true;
+        const check = async () => {
+          try {
+            const res = await fetch(`${location.origin}/office-bridge/api/health`, { credentials: 'same-origin' });
+            const data = await res.json().catch(() => null);
+            if (!alive) return;
+            const ok = !!(data && data.ok && data.dsReachable);
+            setDsOk(ok);
+            if (ok && autoRetry.current < 3) {
+              autoRetry.current += 1;
+              setAttempt((n) => n + 1);
+            }
+          } catch {
+            if (alive) setDsOk(false);
+          }
+        };
+        check();
+        const timer = setInterval(check, 5000);
+        return () => { alive = false; clearInterval(timer); };
+      }, [dsMissing]);
 
       const label = fileAddressBasename(tab.contentId);
       const ext = (address.path.match(/\.([A-Za-z0-9]+)$/) || [])[1]?.toLowerCase() ?? '';
@@ -142,8 +173,16 @@ window.__ModuleLoader__.load({
               : jsxs('div', { className: P + '-msg', children: [
                   jsx('h4', { children: '无法打开编辑器' }),
                   jsx('code', { children: error }),
-                  jsx('span', { children: '请先安装并启动 ONLYOFFICE Document Server，然后点重试。' }),
-                  jsx('button', { type: 'button', className: P + '-btn', onClick: () => { setAttempt((n) => n + 1); }, children: '重试' }),
+                  dsOk === true
+                    ? jsx('span', { className: P + '-probe on', children: 'Document Server 已就绪，正在重新打开…' })
+                    : jsx('span', { className: P + '-probe', children: dsOk === false ? '未检测到 Document Server — 每 5 秒自动探测，装好后无需手动刷新' : '正在检测 Document Server…' }),
+                  dsOk !== true
+                    ? jsx('span', { children: '本插件用本机安装的 ONLYOFFICE Document Server 做编辑引擎（不随插件附带，需管理员权限安装）。' })
+                    : null,
+                  dsOk !== true
+                    ? jsx('a', { className: P + '-btn', href: 'https://download.onlyoffice.com/install/documentserver/windows/onlyoffice-documentserver.exe', target: '_blank', rel: 'noreferrer', children: '下载 ONLYOFFICE Document Server（约 873MB）' })
+                    : null,
+                  jsx('button', { type: 'button', className: P + '-btn', onClick: () => { autoRetry.current = 0; setAttempt((n) => n + 1); }, children: '重试' }),
                 ] }),
         }),
       ] });
