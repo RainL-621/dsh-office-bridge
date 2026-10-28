@@ -2,8 +2,8 @@
 
 [English](README.md) | 简体中文
 
-**在 DSH Desktop 侧边栏里，用本机安装的 ONLYOFFICE Document Server 直接打开并编辑
-Office 文件，保存写回原文件。**
+**你和 AI 智能体在 DSH 侧边栏里编辑同一个 Office 文件，保存直接写回原文件——
+不上传、不转格式，编辑引擎是本机安装的 ONLYOFFICE Document Server。**
 
 - 支持格式：`.xlsx` / `.xls` / `.csv` / `.tsv` / `.docx` / `.pptx`
 - 运行平台：**DSH Desktop（Windows）** 侧边栏插件

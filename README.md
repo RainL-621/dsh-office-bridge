@@ -2,10 +2,11 @@
 
 English | [简体中文](README.zh-CN.md)
 
-> 中文简介：在 DSH Desktop 侧边栏里用本机安装的 ONLYOFFICE Document Server 直接打开并编辑 Office 文件，保存写回原文件。完整中文文档见 [README.zh-CN.md](README.zh-CN.md)。
+> 中文简介：你和 AI 智能体在 DSH 侧边栏里编辑同一个 Office 文件，保存直接写回原文件——不上传、不转格式。完整中文文档见 [README.zh-CN.md](README.zh-CN.md)。
 
-**Open and edit Office files in the DSH Desktop sidebar via a locally installed
-ONLYOFFICE Document Server, and write edits back to the original file.**
+**You and your AI agent edit the same Office file in the DSH sidebar — ONLYOFFICE
+does the heavy lifting, saves land back on the original file, no uploading files
+around.**
 
 - Supported formats: `.xlsx` / `.xls` / `.csv` / `.tsv` / `.docx` / `.pptx`
 - Platform: sidebar plugin for **DSH Desktop (Windows)**
