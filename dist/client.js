@@ -20,9 +20,10 @@ window.__ModuleLoader__.load({
     const { jsx, jsxs } = require('react/jsx-runtime');
 
     const name = 'office-bridge';
-    // cordis 客户端服务名：slots 用于注册 tab 正文，sidebarRightTabs 是
-    // @deepseek-ai/dsh-client-ui-sidebar-right 提供的 tab 类型注册表。
-    const inject = ['slots', 'sidebarRightTabs'];
+    // cordis 客户端服务名。apply 只等 sidebarRightTabs（没有它整个插件无事可做）；
+    // 正文组件依赖的 slots 用 ctx.inject 等它——两者由 dsh.client.inject 声明的
+    // 包（ui-sidebar-right / ui-slots）提供，服务可能不同时到达。
+    const inject = ['sidebarRightTabs'];
 
     const TAB_ID = 'dsh-office-bridge';
     const TAB_KIND = 'office-bridge';
@@ -190,21 +191,29 @@ window.__ModuleLoader__.load({
 
     // --- registration (native sidebar-right tab API) ---
 
+    // --- 注册诊断（best-effort）---
+    // 把注册结果写进 host 的 debug sink（~/.dsh/office-bridge-debug.jsonl），
+    // 下次「为什么没接管」不用再靠猜：一条 client-apply 就够判断。
+    const reported = new Set();
+    function report(event, extra) {
+      const key = event + '|' + JSON.stringify(extra ?? null);
+      if (reported.has(key)) return;
+      reported.add(key);
+      try {
+        fetch(`${location.origin}/office-bridge/api/debug`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ items: [{ event, at: new Date().toISOString(), ...(extra ?? {}) }] }),
+        }).catch(() => undefined);
+      } catch { /* 诊断失败不影响功能 */ }
+    }
+
     function registerSidebarTab(ctx) {
       const tabs = ctx.get('sidebarRightTabs');
+      const slots = ctx.get('slots');
+      report('client-apply', { hasTabs: tabs !== undefined, hasSlots: slots !== undefined });
       if (tabs === undefined) return () => undefined;
-      const slots = ctx.slots;
-      const disposeBody = slots.inject(
-        'sidebar.right.pane.tab',
-        () => slots.register(
-          {
-            name: 'sidebar.right.pane.tab',
-            key: TAB_ID,
-            inject: () => ({ ctx }),
-          },
-          BridgeTabBody
-        )
-      );
       const disposeType = tabs.register({
         id: TAB_ID,
         kind: TAB_KIND, // self-made kind — never 'text'
@@ -213,6 +222,30 @@ window.__ModuleLoader__.load({
         canOpen: (address) => parseFileAddress(address)?.scope === 'session',
         title: fileAddressBasename,
       });
+      report('client-registered', { kind: TAB_KIND, patterns: PATTERNS });
+      // 正文组件：slots 可能比 sidebarRightTabs 晚到（两个包各自提供），用 inject 等它。
+      const mountBody = (scope) => {
+        const bodySlots = scope.get('slots');
+        if (bodySlots === undefined) return () => undefined;
+        report('client-slots-ready', {});
+        try {
+          return bodySlots.inject(
+            'sidebar.right.pane.tab',
+            () => bodySlots.register(
+              {
+                name: 'sidebar.right.pane.tab',
+                key: TAB_ID,
+                inject: () => ({ ctx }),
+              },
+              BridgeTabBody
+            )
+          );
+        } catch (err) {
+          report('client-slots-failed', { message: String(err?.message ?? err) });
+          return () => undefined;
+        }
+      };
+      const disposeBody = ctx.inject(['slots'], (scope) => scope.effect(() => mountBody(scope), 'office-bridge: tab body'));
       return () => {
         disposeType();
         disposeBody();

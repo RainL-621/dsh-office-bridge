@@ -1,6 +1,6 @@
 {
   "name": "dsh-office-bridge",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "license": "MIT",
   "type": "module",
   "description": "Open and edit .xlsx/.docx/.pptx/.csv/.tsv in the DSH sidebar via a locally installed ONLYOFFICE Document Server (original-format edit, callback write-back)",
@@ -25,6 +25,8 @@
     "client": {
       "platform": "web",
       "inject": [
+        "@deepseek-ai/dsh-client-modules",
+        "@deepseek-ai/dsh-client-ui-slots",
         "@deepseek-ai/dsh-client-ui-sidebar-right"
       ]
     }
